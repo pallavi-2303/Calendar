@@ -118,13 +118,21 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
+  :root {
+    /* Backgrounds */
+    --background: 210 20% 98%;    /* Very light blue-gray (#f8fafb) */
+    --card: 0 0% 100%;             /* Pure white for elevated elements */
+    
+    /* Brand Colors */
+    --primary: 201 100% 23%;       /* Deep Oceanic Blue (#00415d) */
+    --primary-foreground: 0 0% 100%;
+    
+    /* Accents & Borders */
+    --accent: 199 89% 48%;         /* Bright Sky Blue for highlights */
+    --border: 214 32% 91%;         /* Soft border color */
+    
+    /* Text */
+    --foreground: 222 47% 11%;     /* Midnight Navy (Instead of pure black) */
+    --muted-foreground: 215 16% 47%; /* Medium Gray for descriptions */
   }
 }
