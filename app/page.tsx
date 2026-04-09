@@ -214,11 +214,16 @@ const normalizeStoredTaskEvents = (items: TaskEvent[]) => {
 export default function Home() {
   const [currentDate, setCurrentDate] = useState(new Date(2024, 0, 1));
   const [viewMode, setViewMode] = useState<ViewMode>("calendar");
-  const [selectedRange, setSelectedRange] = useState<DateRange>({ start: null, end: null });
+  const [selectedRange, setSelectedRange] = useState<DateRange>({
+    start: null,
+    end: null,
+  });
+  const [toggle, settoggle] = useState(false);
   const [savedNotes, setSavedNotes] = useState<SavedNote[]>([]);
   const [holidayDates, setHolidayDates] = useState<string[]>([]);
   const [taskEvents, setTaskEvents] = useState<TaskEvent[]>([]);
-  const [notesFilterMode, setNotesFilterMode] = useState<NotesFilterMode>("month");
+  const [notesFilterMode, setNotesFilterMode] =
+    useState<NotesFilterMode>("month");
   const [taskFilterMode, setTaskFilterMode] = useState<TaskFilterMode>("month");
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
@@ -258,6 +263,9 @@ export default function Home() {
 
   const activeTheme = monthThemes[currentDate.getMonth()];
   const holidaySet = useMemo(() => new Set(holidayDates), [holidayDates]);
+  const sidebarToggle = () => {
+    settoggle(!toggle);
+  };
 
   const normalizedSelection = useMemo(
     () => normalizeRange(selectedRange),
@@ -284,7 +292,9 @@ export default function Home() {
     const monthEndKey = toDateKey(monthEnd);
 
     return savedNotes
-      .filter((note) => doesOverlap(note.start, note.end, monthStartKey, monthEndKey))
+      .filter((note) =>
+        doesOverlap(note.start, note.end, monthStartKey, monthEndKey),
+      )
       .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   }, [currentDate, savedNotes]);
 
@@ -316,7 +326,8 @@ export default function Home() {
 
   const completedTasksCount = useMemo(
     () =>
-      taskEvents.filter((item) => item.kind === "task" && item.completed).length,
+      taskEvents.filter((item) => item.kind === "task" && item.completed)
+        .length,
     [taskEvents],
   );
 
@@ -364,9 +375,10 @@ export default function Home() {
       return;
     }
 
-    const markers = eachDayOfInterval({ start: selection.start, end: selection.end }).map(
-      (date) => toDateKey(date),
-    );
+    const markers = eachDayOfInterval({
+      start: selection.start,
+      end: selection.end,
+    }).map((date) => toDateKey(date));
     const unique = Array.from(new Set([...holidayDates, ...markers]));
     persistHolidays(unique);
   };
@@ -380,7 +392,9 @@ export default function Home() {
     }
 
     const normalized = normalizeRange(selectedRange);
-    const start = normalized ? toDateKey(normalized.start) : toDateKey(currentDate);
+    const start = normalized
+      ? toDateKey(normalized.start)
+      : toDateKey(currentDate);
     const end = normalized ? toDateKey(normalized.end) : start;
 
     const newItem: TaskEvent = {
@@ -412,6 +426,25 @@ export default function Home() {
   return (
     <>
       <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-[#ffffffcc] backdrop-blur-md rounded-b-xl shadow-[0px_12px_32px_rgba(25,28,29,0.06)]">
+        <button onClick={sidebarToggle}>
+          {" "}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="lucide lucide-menu-icon lucide-menu"
+          >
+            <path d="M4 5h16" />
+            <path d="M4 12h16" />
+            <path d="M4 19h16" />
+          </svg>
+        </button>
         <div className="flex items-center gap-4">
           <span className="text-[#191c1d] font-bold text-xl font-headline tracking-tight">
             Pallavi's Calendar
@@ -442,10 +475,16 @@ export default function Home() {
             Today
           </button>
           <div className="flex gap-2">
-            <span className="material-symbols-outlined cursor-pointer p-2 hover:bg-surface-container-low rounded-full transition-colors" style={{ color: activeTheme.primary }}>
+            <span
+              className="material-symbols-outlined cursor-pointer p-2 hover:bg-surface-container-low rounded-full transition-colors"
+              style={{ color: activeTheme.primary }}
+            >
               calendar_today
             </span>
-            <span className="material-symbols-outlined cursor-pointer p-2 hover:bg-surface-container-low rounded-full transition-colors" style={{ color: activeTheme.primary }}>
+            <span
+              className="material-symbols-outlined cursor-pointer p-2 hover:bg-surface-container-low rounded-full transition-colors"
+              style={{ color: activeTheme.primary }}
+            >
               share
             </span>
           </div>
@@ -453,6 +492,8 @@ export default function Home() {
       </nav>
 
       <Sidebar
+        toggle ={toggle}
+        setToggle={settoggle} 
         currentDate={currentDate}
         viewMode={viewMode}
         activePrimary={activeTheme.primary}
@@ -506,7 +547,9 @@ export default function Home() {
                     }}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-headline font-bold text-lg">Focus of the Month</h4>
+                      <h4 className="font-headline font-bold text-lg">
+                        Focus of the Month
+                      </h4>
                       <span
                         className="material-symbols-outlined"
                         style={{ fontVariationSettings: "'FILL' 1" }}
@@ -515,7 +558,9 @@ export default function Home() {
                       </span>
                     </div>
                     <p className="text-sm opacity-90 leading-relaxed">
-                      Theme auto-switches by month and hero image. Select one day or a range, add holiday markers, and save notes linked to those dates.
+                      Theme auto-switches by month and hero image. Select one
+                      day or a range, add holiday markers, and save notes linked
+                      to those dates.
                     </p>
                   </div>
                 </div>
@@ -587,7 +632,8 @@ export default function Home() {
               <div className="space-y-4">
                 {filteredNotes.length === 0 ? (
                   <p className="text-on-surface-variant">
-                    No saved notes found for this view. Go to Calendar, select date(s), and save notes.
+                    No saved notes found for this view. Go to Calendar, select
+                    date(s), and save notes.
                   </p>
                 ) : (
                   filteredNotes.map((note) => {
@@ -676,7 +722,8 @@ export default function Home() {
               <div className="space-y-4">
                 {filteredTaskEvents.length === 0 ? (
                   <p className="text-on-surface-variant">
-                    No tasks/events found for this view. Click the + button to add one.
+                    No tasks/events found for this view. Click the + button to
+                    add one.
                   </p>
                 ) : (
                   filteredTaskEvents.map((item) => (
@@ -715,7 +762,9 @@ export default function Home() {
                         {rangeLabel(item.start, item.end)}
                       </p>
                       {item.details ? (
-                        <p className="text-on-surface-variant">{item.details}</p>
+                        <p className="text-on-surface-variant">
+                          {item.details}
+                        </p>
                       ) : null}
                       <div className="mt-3">
                         <button
@@ -730,7 +779,9 @@ export default function Home() {
                               : activeTheme.onPrimaryFixedVariant,
                           }}
                         >
-                          {item.completed ? "Mark Incomplete" : "Mark Completed"}
+                          {item.completed
+                            ? "Mark Incomplete"
+                            : "Mark Completed"}
                         </button>
                       </div>
                     </article>
@@ -745,7 +796,10 @@ export default function Home() {
       <button
         onClick={() => setIsTaskModalOpen(true)}
         className="fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform z-50"
-        style={{ backgroundColor: activeTheme.primary, color: activeTheme.onPrimary }}
+        style={{
+          backgroundColor: activeTheme.primary,
+          color: activeTheme.onPrimary,
+        }}
       >
         <span
           className="material-symbols-outlined text-3xl"
@@ -795,7 +849,10 @@ function DashboardCard({
 }) {
   return (
     <div className="bg-surface-container-low p-6 rounded-xl flex items-center gap-4">
-      <div className="p-3 rounded-full" style={{ backgroundColor: `${primary}22`, color: primary }}>
+      <div
+        className="p-3 rounded-full"
+        style={{ backgroundColor: `${primary}22`, color: primary }}
+      >
         <span className="material-symbols-outlined">{icon}</span>
       </div>
       <div>

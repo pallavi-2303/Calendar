@@ -5,6 +5,8 @@ import { format } from "date-fns";
 type SidebarViewMode = "calendar" | "notes" | "tasks";
 
 interface SidebarProps {
+  toggle: boolean;
+  setToggle: (val: boolean) => void;
   currentDate: Date;
   viewMode: SidebarViewMode;
   activePrimary: string;
@@ -22,9 +24,25 @@ export default function Sidebar({
   onAddHolidayMarkers,
   onClearSelection,
   canAddHoliday,
+  toggle,
+  setToggle
 }: SidebarProps) {
   return (
-    <aside className="hidden lg:flex flex-col h-screen fixed left-0 top-0 pt-24 w-64 bg-surface-container-low transition-all">
+    <aside
+      className={`
+    fixed top-0 left-0 z-50 h-screen w-64 bg-surface-container-low
+    pt-24 transition-transform duration-300
+    ${toggle ? "translate-x-0" : "-translate-x-full"}
+    lg:translate-x-0 lg:flex flex-col
+  `}
+    >
+      {" "}
+      <button
+  onClick={() => setToggle(false)}
+  className="absolute top-4 right-4 p-2 rounded-full hover:bg-surface-container-high lg:hidden"
+>
+  <span className="material-symbols-outlined">close</span>
+</button>
       <div className="px-6 mb-8">
         <h2 className="text-on-background font-bold font-headline text-xl">
           {format(currentDate, "MMMM yyyy")}
@@ -33,14 +51,13 @@ export default function Sidebar({
           Productivity Cycle
         </p>
       </div>
-
       <nav className="flex flex-col gap-1 px-4">
         <SidebarButton
           icon="calendar_month"
           label="Calendar"
           isActive={viewMode === "calendar"}
           activePrimary={activePrimary}
-          onClick={() => onViewModeChange("calendar")}
+          onClick={() =>  onViewModeChange("calendar")}
         />
         <SidebarButton
           icon="edit_note"
@@ -62,7 +79,6 @@ export default function Sidebar({
           <span>Themes</span>
         </button> */}
       </nav>
-
       <div className="mt-auto p-6 space-y-3">
         <button
           onClick={onAddHolidayMarkers}
