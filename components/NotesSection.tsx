@@ -1,54 +1,113 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { format } from "date-fns";
+
+type DateRange = {
+  start: Date | null;
+  end: Date | null;
+};
+
+type SavedNote = {
+  id: string;
+  start: string;
+  end: string;
+  text: string;
+  createdAt: string;
+};
 
 interface NotesSectionProps {
   currentDate: Date;
+  selectedRange: DateRange;
+  onSaveRangeNote: (text: string) => void;
+  selectionNotes: SavedNote[];
 }
 
-export default function NotesSection({ currentDate }: NotesSectionProps) {
-  const [notes, setNotes] = useState<string>("");
+const formatRangeLabel = (selectedRange: DateRange) => {
+  if (!selectedRange.start) {
+    return "No date selected";
+  }
 
-  // Load notes from localStorage whenever the month changes
-  useEffect(() => {
-    const storageKey = `notes-${format(currentDate, "MMM-yyyy")}`;
-    const saved = localStorage.getItem(storageKey);
-    setNotes(saved || "");
-  }, [currentDate]);
+  const endDate = selectedRange.end ?? selectedRange.start;
+  const sameDay = format(selectedRange.start, "yyyy-MM-dd") === format(endDate, "yyyy-MM-dd");
 
-  // Save notes to localStorage 
-  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    setNotes(value);
-    const storageKey = `notes-${format(currentDate, "MMM-yyyy")}`;
-    localStorage.setItem(storageKey, value);
+  if (sameDay) {
+    return format(selectedRange.start, "MMM d, yyyy");
+  }
+
+  return `${format(selectedRange.start, "MMM d")} - ${format(endDate, "MMM d, yyyy")}`;
+};
+
+export default function NotesSection({
+  currentDate,
+  selectedRange,
+  onSaveRangeNote,
+  selectionNotes,
+}: NotesSectionProps) {
+  const [draftNote, setDraftNote] = useState("");
+  const selectionLabel = formatRangeLabel(selectedRange);
+  const hasSelection = Boolean(selectedRange.start);
+
+  const handleSave = () => {
+    const trimmed = draftNote.trim();
+    if (!trimmed || !hasSelection) {
+      return;
+    }
+
+    onSaveRangeNote(trimmed);
+    setDraftNote("");
   };
 
   return (
-    <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 h-full flex flex-col">
-      <h3 className="text-xl font-bold text-[#001e2e] mb-6 flex items-center gap-2">
-        <span className="w-2 h-6 bg-primary rounded-full" />
-        Monthly Memos
+    <div className="bg-surface-container-lowest p-8 rounded-xl shadow-[0px_12px_32px_rgba(25,28,29,0.06)] min-h-[500px] flex flex-col">
+      <h3 className="font-headline text-2xl font-bold mb-6 flex items-center gap-2">
+        <span className="material-symbols-outlined text-primary">description</span>
+        Notes for {format(currentDate, "MMMM")}
       </h3>
-      
-      <div className="relative flex-1">
-        {/* The "Ruled Line" Aesthetic */}
+
+      <p className="text-sm text-on-surface-variant mb-4">
+        Selection: <span className="font-semibold">{selectionLabel}</span>
+      </p>
+
+      <div className="ruled-lines h-[400px] font-body text-on-surface-variant flex-1">
         <textarea
-          value={notes}
-          onChange={handleNoteChange}
-          placeholder="Jot down your goals for this month..."
-          className="w-full h-64 lg:h-full bg-transparent border-none resize-none focus:ring-0 italic text-slate-600 leading-[2rem] placeholder:text-slate-300"
-          style={{
-            backgroundImage: "linear-gradient(transparent, transparent 31px, #e2e8f0 31px)",
-            backgroundSize: "100% 32px",
-          }}
+          value={draftNote}
+          onChange={(e) => setDraftNote(e.target.value)}
+          placeholder="Add a note for the selected date or range..."
+          className="w-full h-full bg-transparent border-none resize-none focus:outline-none text-on-surface-variant leading-[2rem] placeholder:text-on-surface-variant/70"
         />
       </div>
-      
-      <p className="text-[10px] text-slate-400 mt-4 uppercase tracking-widest font-bold">
-        Auto-saved to local storage
-      </p>
+
+      <div className="mt-8 border-t border-outline-variant/15 pt-6">
+        <button
+          onClick={handleSave}
+          disabled={!hasSelection || !draftNote.trim()}
+          className="w-full py-3 bg-secondary-container text-on-secondary-container rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-surface-container-highest transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span className="material-symbols-outlined">add_circle</span>
+          Save Note to Selection
+        </button>
+      </div>
+
+      <div className="mt-6 space-y-3">
+        <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant/70">
+          Notes on this selection
+        </p>
+        <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
+          {selectionNotes.length === 0 ? (
+            <p className="text-sm text-on-surface-variant/70">No notes yet for this date range.</p>
+          ) : (
+            selectionNotes.map((note) => (
+              <div key={note.id} className="rounded-lg bg-surface-container-low p-3">
+                <p className="text-xs text-on-surface-variant/70 mb-1">
+                  {note.start === note.end ? note.start : `${note.start} to ${note.end}`}
+                </p>
+                <p className="text-sm text-on-surface">{note.text}</p>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }

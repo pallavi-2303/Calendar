@@ -1,18 +1,38 @@
-export default function Hero() {
+"use client";
+
+import { format } from "date-fns";
+
+interface HeroProps {
+  currentDate: Date;
+  heroImage: string;
+  primary: string;
+  onPrimary: string;
+}
+
+export default function Hero({ currentDate, heroImage, primary, onPrimary }: HeroProps) {
   return (
-    <div className="relative h-64 md:h-80 w-full rounded-3xl overflow-hidden shadow-2xl mb-10">
-      <img 
-        src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80" 
+    <section className="relative h-[300px] md:h-[450px] overflow-hidden rounded-b-xl shadow-lg">
+      <img
+        alt="Month hero"
         className="w-full h-full object-cover"
-        alt="Mountain background"
+        src={heroImage}
       />
-      <div className="absolute inset-0 bg-black/10 flex items-center px-12">
-        <div className="bg-primary p-8 md:p-12 transform -rotate-3 shadow-2xl">
-          <h1 className="text-white text-5xl md:text-7xl font-black leading-none">
-            2024<br />JANUARY
+
+      <div className="absolute inset-0 bg-gradient-to-r from-black/35 to-transparent flex items-center px-8 md:px-16">
+        <div
+          className="px-8 py-10 md:px-12 md:py-16 transform -rotate-2 shadow-2xl"
+          style={{ backgroundColor: primary }}
+        >
+          <h1
+            className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none"
+            style={{ color: onPrimary }}
+          >
+            {format(currentDate, "yyyy")}
+            <br />
+            {format(currentDate, "MMMM").toUpperCase()}
           </h1>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

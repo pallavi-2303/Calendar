@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar"; // Import your Sidebar component
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 });
 
@@ -24,19 +23,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="light h-full">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#f8fafb] text-[#191c1d] min-h-full`}
+        className={`${inter.variable} ${manrope.variable} antialiased min-h-full paper-texture bg-background text-on-background`}
       >
-        <div className="flex">
-          {/* 1. Sidebar stays fixed on the left */}
-          <Sidebar />
-
-          {/* 2. Main content area shifts to the right on desktop */}
-          <main className="flex-1 lg:ml-64 min-h-screen">
-            {children}
-          </main>
-        </div>
+        {children}
       </body>
     </html>
   );
