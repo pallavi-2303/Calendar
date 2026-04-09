@@ -1,36 +1,183 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Calendar
 
-## Getting Started
+A personal planning dashboard built with Next.js where month-based visuals and day-range planning work together.
 
-First, run the development server:
+This project is not trying to be a full enterprise calendar clone. It is focused on one thing: giving a single person a calm place to plan month-by-month, drop notes on date ranges, mark holidays, and track lightweight tasks/events without needing a backend.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## What the app does
+
+At runtime, the app has 3 working modes:
+
+1. Calendar view
+2. Notes archive view
+3. Tasks/events view
+
+### Calendar view
+
+- Month hero image changes automatically by month.
+- Theme colors also switch month-by-month.
+- You can click a single day or drag your selection by picking start and end dates.
+- Selected ranges are highlighted.
+- Today gets a distinct visual treatment.
+- Holiday markers can be added for the selected range.
+- Notes can be saved for the selected day/range.
+
+### Notes view
+
+- Shows all saved notes or just the current month.
+- Notes are stored with a date range (`start`, `end`) and free text.
+- If a holiday marker falls in that note range, the note is tagged as holiday-marked.
+
+### Tasks/events view
+
+- Add an item as either `task` or `event`.
+- Attach it to the current selection (or the current date if no selection exists).
+- Filter by current month or all items.
+- Mark tasks complete/incomplete.
+
+## Why this architecture
+
+Everything is intentionally client-side right now.
+
+- No API routes
+- No database
+- No auth
+- No sync
+
+For this use case, local-first storage is enough and keeps the app very fast and simple to run. It also makes prototyping UI behavior easy before introducing backend complexity.
+
+## Tech stack
+
+- Next.js 16 (App Router)
+- React 19
+- TypeScript (strict mode)
+- Tailwind CSS v4
+- date-fns (date math + formatting)
+- Framer Motion (calendar transitions)
+- Material Symbols + Lucide ecosystem (icons)
+
+## Project structure (high signal files)
+
+```text
+app/
+	layout.tsx         # Root layout, font loading, metadata
+	page.tsx           # Main state + feature orchestration
+	globals.css        # Theme tokens, utility classes, typography helpers
+
+components/
+	Hero.tsx           # Month hero banner
+	Sidebar.tsx        # Left nav + quick actions
+	CalenderGrid.tsx   # Interactive calendar grid + range selection
+	NotesSection.tsx   # Selection-aware note input and preview
+	TaskEventModal.tsx # Modal for creating task/event entries
+
+lib/
+	utils.ts           # Shared utility helpers
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Core state model
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The main state lives in `app/page.tsx`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### View and navigation state
 
-## Learn More
+- `currentDate`
+- `viewMode` (`calendar | notes | tasks`)
+- `selectedRange` (`start` + `end` date)
 
-To learn more about Next.js, take a look at the following resources:
+### Domain state
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `savedNotes`
+- `holidayDates`
+- `taskEvents`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Modal / draft state
 
-## Deploy on Vercel
+- `isTaskModalOpen`
+- `draftTitle`
+- `draftDetails`
+- `draftKind`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Data persistence
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The app persists all user data in `localStorage` using stable keys:
+
+- `ephemera-range-notes-v1`
+- `ephemera-holidays-v1`
+- `ephemera-tasks-events-v1`
+
+Data is loaded once on mount, guarded with JSON parse fallback so a malformed value does not crash rendering.
+
+## Date logic notes
+
+Date handling is mostly done with `date-fns`.
+
+- Range normalization ensures `start <= end` even if the user picks backward.
+- Overlap checks are used when matching notes to selected ranges/month windows.
+- Month filtering for tasks/events is based on each item's `start` date.
+- Holiday markers are generated by enumerating each day in the selected interval.
+
+## Theming model
+
+There are 12 month themes, each with:
+
+- hero image
+- primary color
+- container/fixed variants
+- text-on-color variants
+
+This keeps visual identity changing through the year without adding a full theme manager UI yet.
+
+## UX behavior worth knowing
+
+- Selecting a new date after finishing a range starts a fresh selection.
+- "Add Holiday Marker" is disabled when there is no active selection.
+- "Save Note" is disabled for empty note text or no selection.
+- Task/event creation allows optional details but requires a title.
+- Task completion toggles in place; there is no delete flow yet.
+
+## Run locally
+
+### Prerequisites
+
+- Node.js 20+ recommended
+- npm (or another package manager, but scripts below use npm)
+
+### Setup
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+### Other scripts
+
+```bash
+npm run build
+npm run start
+npm run lint
+```
+
+## Current limitations (intentional for now)
+
+- Data is device/browser-local only.
+- No user accounts or cloud sync.
+- No recurring events model.
+- No delete/edit UI for notes and tasks yet.
+- No timezone strategy beyond browser defaults.
+
+## Practical next upgrades
+
+If this app is extended beyond personal use, the order below is the most useful:
+
+1. Add edit/delete actions for notes and tasks.
+2. Add recurring rules for tasks/events.
+3. Move persistence to backend (or at least export/import JSON).
+4. Add search across notes/tasks.
+5. Add accessibility pass for keyboard-only date-range selection.
+
+## One-line summary
+
+Ephemera Calendar is a personal, month-themed planning dashboard that keeps calendar selection, note-taking, and task tracking in one place with a local-first approach.
